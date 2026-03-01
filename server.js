@@ -27,6 +27,11 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Catch-all para SPA (Single Page Application)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // ============================================
 // CONFIGURAÇÕES E CONSTANTES
 // ============================================

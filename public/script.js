@@ -371,8 +371,21 @@ socket.on('room-stats', (stats) => {
 
 btnLogout.addEventListener('click', () => {
     if (confirm('Desconectar da sala?')) {
+        // Desconectar do socket
         socket.disconnect();
-        location.reload();
+        
+        // Voltar à tela de login
+        currentUser = null;
+        chatScreen.classList.remove('active');
+        loginScreen.classList.add('active');
+        
+        // Limpar formulário
+        document.getElementById('username').value = '';
+        document.getElementById('message-input').value = '';
+        messagesContainer.innerHTML = '<div class="welcome-message"><h3>Bem-vindo ao Conexão 4</h3><p>Aproveite o chat com seus amigos!</p></div>';
+        
+        // Reconectar socket
+        socket.connect();
     }
 });
 
