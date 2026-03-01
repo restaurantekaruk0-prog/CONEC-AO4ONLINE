@@ -673,7 +673,18 @@ if (btnRecordChat) {
         
         if (!isRecording) {
             try {
-                mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                // Verificar suporte do navegador
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    alert('❌ Seu navegador não suporta acesso ao microfone. Use Chrome, Firefox ou Edge.');
+                    return;
+                }
+                
+                mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true
+                    }
+                });
                 mediaRecorder = new MediaRecorder(mediaStream);
                 audioChunks = [];
                 
@@ -691,13 +702,6 @@ if (btnRecordChat) {
                         mediaStream.getTracks().forEach(track => track.stop());
                         
                         btnRecordChat.classList.remove('recording');
-                        
-                        if (btnRecord) {
-                            btnRecord.classList.remove('recording');
-                            const recordStatus = btnRecord.querySelector('#record-status');
-                            if (recordStatus) recordStatus.textContent = '🎤 Gravar';
-                        }
-                        
                         isRecording = false;
                     };
                     reader.readAsDataURL(audioBlob);
@@ -707,15 +711,19 @@ if (btnRecordChat) {
                 isRecording = true;
                 btnRecordChat.classList.add('recording');
                 
-                // Sincronizar visual do botão no games
-                if (btnRecord) {
-                    btnRecord.classList.add('recording');
-                    const recordStatus = btnRecord.querySelector('#record-status');
-                    if (recordStatus) recordStatus.textContent = '⏹️ Parar';
-                }
             } catch (err) {
                 console.error('Erro ao acessar microfone:', err);
-                alert('Microfone não disponível ou permissão negada');
+                
+                // Mensagens de erro mais específicas
+                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                    alert('🔒 Permissão negada! Você precisar permitir acesso ao microfone no navegador.\n\nClique nos 3 pontinhos → Configurações → Privacidade → Microfone → Permita para este site.');
+                } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                    alert('🎙️ Nenhum microfone encontrado! Conecte um microfone ao seu dispositivo.');
+                } else if (err.name === 'NotReadableError') {
+                    alert('⚠️ Microfone em uso por outro programa! Feche outro app que está usando o microfone.');
+                } else {
+                    alert('❌ Erro ao acessar microfone: ' + (err.message || 'Desconhecido'));
+                }
             }
         } else if (mediaRecorder) {
             mediaRecorder.stop();
