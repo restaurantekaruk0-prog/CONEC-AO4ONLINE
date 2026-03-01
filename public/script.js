@@ -11,6 +11,7 @@ const socket = io();
 let currentUser = null;
 let selectedAvatar = '🔥';
 let mediaRecorder = null;
+let mediaStream = null;
 let audioChunks = [];
 let isRecording = false;
 
@@ -170,6 +171,7 @@ socket.on('duel-ended', () => {
 });
 
 socket.on('receive-audio', (data) => {
+    console.log('🎤 Áudio recebido de:', data.username);
     addAudioMessage(data);
 });
 
@@ -246,7 +248,7 @@ function addAudioMessage(data) {
                     <span class="audio-message-username">${escapeHtml(data.username)}</span>
                     <span class="audio-message-time">${data.timestamp}</span>
                 </div>
-                <audio controls style="width: 100%; margin-top: 0.5rem;">
+                <audio controls controlsList="nodownload" style="width: 100%; margin-top: 0.5rem;">
                     <source src="${data.audio}" type="audio/webm">
                     Seu navegador não suporta áudio.
                 </audio>
@@ -432,8 +434,8 @@ if (btnRecord) {
     btnRecord.addEventListener('click', async () => {
         if (!isRecording) {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
+                mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(mediaStream);
                 audioChunks = [];
                 
                 mediaRecorder.ondataavailable = (event) => {
@@ -445,6 +447,10 @@ if (btnRecord) {
                     const reader = new FileReader();
                     reader.onloadend = () => {
                         socket.emit('send-audio', { audio: reader.result });
+                        
+                        // Parar todas as tracks do stream
+                        mediaStream.getTracks().forEach(track => track.stop());
+                        
                         btnRecord.classList.remove('recording');
                         const recordStatus = btnRecord.querySelector('#record-status');
                         if (recordStatus) recordStatus.textContent = '🎤 Gravar';
