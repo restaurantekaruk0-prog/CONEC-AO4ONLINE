@@ -1634,23 +1634,71 @@ body {
 }
 
 @media (max-width: 768px) {
-    .hamburger-menu {
+    /* Header Mobile - Compacto */
+    .chat-header {
+        padding: 8px 12px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        min-height: auto;
+    }
+
+    .header-content {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .user-info {
         display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .user-avatar {
+        font-size: 1.8rem;
+        flex-shrink: 0;
+    }
+
+    .user-name-info {
+        min-width: 0;
+    }
+
+    .user-name-info h2 {
+        font-size: 0.9rem;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .user-name-info p {
+        font-size: 0.65rem;
+        margin: 0;
+    }
+
+    .btn-logout {
+        padding: 6px 10px;
+        font-size: 0.65rem;
+        flex-shrink: 0;
     }
 
     /* Tabs para mobile */
     .chat-tabs {
         display: flex;
-        gap: var(--spacing-xs);
-        padding: var(--spacing-sm);
+        gap: 4px;
+        padding: 6px;
         background: rgba(26, 31, 58, 0.9);
-        border-bottom: 2px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
 
     .chat-tabs::-webkit-scrollbar {
-        height: 4px;
+        height: 3px;
     }
 
     .chat-tabs::-webkit-scrollbar-thumb {
@@ -1659,24 +1707,25 @@ body {
     }
 
     .chat-tab-btn {
-        padding: var(--spacing-sm) var(--spacing-md);
+        padding: 8px 12px;
         border: none;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.08);
         color: var(--text-secondary);
-        border-radius: 8px;
+        border-radius: 6px;
         cursor: pointer;
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         white-space: nowrap;
         transition: var(--transition);
         font-weight: 600;
         flex-shrink: 0;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
     .chat-tab-btn.active {
         background: linear-gradient(135deg, var(--primary), var(--primary-light));
         color: white;
-        box-shadow: 0 0 15px rgba(108, 92, 231, 0.4);
+        box-shadow: 0 0 10px rgba(108, 92, 231, 0.3);
     }
 
     .chat-tab-btn:active {
@@ -1686,53 +1735,24 @@ body {
     /* Conteúdo das abas */
     .tab-content {
         display: none;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
     }
 
     .tab-content.active {
         display: flex;
+        flex: 1;
     }
 
-    /* Melhorias gerais para mobile */
-    body {
-        font-size: 16px;
+    #messages-content {
+        flex-direction: column;
     }
 
-    .chat-header {
-        padding: var(--spacing-sm) var(--spacing-md);
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-
-    .header-content {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .user-info {
-        width: auto;
-        gap: var(--spacing-sm);
-    }
-
-    .user-name-info h2 {
-        font-size: 1rem;
-        margin: 0;
-    }
-
-    .user-name-info p {
-        font-size: 0.75rem;
-        margin: 0;
-    }
-
-    .user-avatar {
-        font-size: 2rem;
-    }
-
-    .btn-logout {
-        padding: var(--spacing-xs) var(--spacing-sm);
-        font-size: 0.75rem;
-        padding: 6px 12px;
+    #sidebar-content,
+    #games-content {
+        flex-direction: column;
+        overflow-y: auto;
     }
 
     /* Chat Main Mobile */
@@ -1741,20 +1761,21 @@ body {
         flex-direction: column;
         padding: 0;
         gap: 0;
-        height: calc(100vh - 130px);
+        height: calc(100vh - 50px - 40px);
+        min-height: calc(100vh - 50px - 40px);
     }
 
     /* Sidebar Mobile - Hidden by default */
     .sidebar {
         display: none;
         width: 100%;
-        height: auto;
-        padding: var(--spacing-md);
+        height: 100%;
+        padding: 8px;
         border-radius: 0;
         background: rgba(26, 31, 58, 0.95);
         flex-direction: column;
-        gap: var(--spacing-md);
-        border-top: 2px solid var(--border-color);
+        gap: 6px;
+        border: none;
     }
 
     .sidebar.visible {
@@ -1762,23 +1783,94 @@ body {
         position: relative;
         left: auto;
         top: auto;
-        width: 100%;
-        height: auto;
-        background: rgba(26, 31, 58, 0.95);
     }
 
     .sidebar-section {
-        padding: var(--spacing-md);
+        padding: 8px;
         background: rgba(42, 48, 80, 0.6);
-        border-radius: 10px;
+        border-radius: 8px;
     }
 
     .sidebar-title {
-        font-size: 0.9rem;
-        margin-bottom: var(--spacing-sm);
+        font-size: 0.8rem;
+        margin-bottom: 6px;
+        letter-spacing: 0.5px;
     }
 
-    /* Chat Section Full Width */
+    .users-list {
+        gap: 4px;
+    }
+
+    .user-item {
+        padding: 6px 8px;
+        gap: 6px;
+        font-size: 0.85rem;
+        border-radius: 6px;
+    }
+
+    .user-item-avatar {
+        font-size: 1.2rem;
+    }
+
+    .user-item-name {
+        font-size: 0.8rem;
+    }
+
+    .user-item-points {
+        font-size: 0.7rem;
+    }
+
+    .room-stats {
+        font-size: 0.85rem;
+        gap: 4px;
+    }
+
+    .room-stats p {
+        padding: 4px 0;
+        font-size: 0.85rem;
+    }
+
+    .last-challenge {
+        padding: 8px;
+        font-size: 0.8rem;
+        border-radius: 6px;
+    }
+
+    .btn-challenge {
+        padding: 8px;
+        min-height: 40px;
+        width: 100%;
+        font-size: 0.8rem;
+    }
+
+    .ranking-list {
+        gap: 4px;
+    }
+
+    .ranking-item {
+        padding: 6px;
+        gap: 8px;
+        border-radius: 6px;
+    }
+
+    .ranking-position {
+        font-size: 1rem;
+        min-width: 30px;
+    }
+
+    .ranking-position.gold {
+        font-size: 1.2rem;
+    }
+
+    .ranking-name {
+        font-size: 0.85rem;
+    }
+
+    .ranking-points {
+        font-size: 0.8rem;
+    }
+
+    /* Chat Section */
     .chat-section {
         flex: 1;
         display: flex;
@@ -1786,26 +1878,43 @@ body {
         border-radius: 0;
         border: none;
         background: transparent;
+        min-height: 0;
     }
 
-    /* Messages Better Layout */
+    /* Messages */
     .messages-container {
-        padding: var(--spacing-md);
-        gap: var(--spacing-sm);
+        padding: 8px;
+        gap: 6px;
         flex: 1;
         overflow-y: auto;
         overflow-x: hidden;
+        min-height: 0;
+    }
+
+    .welcome-message {
+        padding: 8px;
+    }
+
+    .welcome-message h3 {
+        font-size: 1rem;
+        margin-bottom: 4px;
+    }
+
+    .welcome-message p {
+        font-size: 0.8rem;
     }
 
     .message {
-        gap: var(--spacing-sm);
-        margin-bottom: var(--spacing-sm);
+        gap: 6px;
+        margin-bottom: 6px;
+        align-items: flex-start;
     }
 
     .message-avatar {
-        font-size: 1.5rem;
-        min-width: 32px;
+        font-size: 1.3rem;
+        min-width: 28px;
         text-align: center;
+        flex-shrink: 0;
     }
 
     .message-content {
@@ -1813,54 +1922,102 @@ body {
         min-width: 0;
     }
 
+    .message-header {
+        gap: 4px;
+        margin-bottom: 2px;
+    }
+
+    .message-username {
+        font-size: 0.8rem;
+    }
+
+    .message-time {
+        font-size: 0.7rem;
+    }
+
     .message-text {
-        font-size: 0.95rem;
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: 8px;
+        font-size: 0.9rem;
+        padding: 6px 8px;
+        border-radius: 6px;
         word-wrap: break-word;
         overflow-wrap: break-word;
+        line-height: 1.3;
+    }
+
+    /* System Message */
+    .system-message {
+        padding: 6px 8px;
+        font-size: 0.85rem;
+        border-radius: 6px;
+        border-left: 2px solid var(--text-system);
+    }
+
+    /* Challenge Display */
+    .challenge-display {
+        padding: 8px;
+        border-radius: 8px;
+        margin: 6px 0;
+    }
+
+    .challenge-label {
+        font-size: 0.7rem;
+    }
+
+    .challenge-text {
+        font-size: 1rem;
+        margin-bottom: 6px;
+    }
+
+    .challenge-drawn-by {
+        font-size: 0.7rem;
     }
 
     /* Input Mobile */
     .message-input-form {
         display: flex;
-        gap: var(--spacing-xs);
-        padding: var(--spacing-md);
+        gap: 4px;
+        padding: 8px;
         background: rgba(26, 31, 58, 0.9);
-        border-top: 2px solid var(--border-color);
+        border-top: 1px solid var(--border-color);
         margin-top: auto;
+        flex-shrink: 0;
     }
 
     #message-input {
         flex: 1;
-        padding: var(--spacing-md);
+        padding: 8px;
         font-size: 16px;
-        border-radius: 8px;
-        min-height: 44px;
+        border-radius: 6px;
+        min-height: 40px;
+        height: 40px;
     }
 
     .btn-send {
-        padding: var(--spacing-md);
-        min-width: 44px;
-        min-height: 44px;
-        border-radius: 8px;
-        font-size: 1.2rem;
+        padding: 8px;
+        min-width: 40px;
+        min-height: 40px;
+        height: 40px;
+        border-radius: 6px;
+        font-size: 1.1rem;
+        flex-shrink: 0;
     }
 
     .btn-send span {
-        display: block;
+        display: none;
     }
 
     .btn-send::before {
-        content: '';
+        content: '➤';
     }
 
-    /* Botões maiores em mobile */
+    /* Games Buttons */
     .btn-game {
-        padding: var(--spacing-md) var(--spacing-md);
-        min-height: 48px;
-        font-size: 0.9rem;
-        margin-bottom: var(--spacing-sm);
+        padding: 8px;
+        min-height: 44px;
+        font-size: 0.85rem;
+        margin-bottom: 6px;
+        gap: 6px;
+        flex-direction: column;
     }
 
     .btn-game .icon {
@@ -1868,140 +2025,201 @@ body {
     }
 
     .btn-record {
-        padding: var(--spacing-md);
-        min-height: 48px;
-        font-size: 0.9rem;
-    }
-
-    .btn-challenge {
-        padding: var(--spacing-md);
+        padding: 8px;
         min-height: 44px;
-        width: 100%;
+        font-size: 0.85rem;
     }
 
     .reactions-buttons {
         grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
     }
 
     .btn-reaction {
-        padding: var(--spacing-md);
-        min-height: 44px;
-        font-size: 1.8rem;
+        padding: 8px;
+        min-height: 42px;
+        font-size: 1.6rem;
+        border-radius: 6px;
     }
 
     /* Login Mobile */
     .login-container {
         max-width: 95vw;
         padding: var(--spacing-lg);
-        border-radius: 20px;
+        border-radius: 15px;
+        margin: auto;
+    }
+
+    .login-header {
+        margin-bottom: var(--spacing-lg);
     }
 
     .title-glow {
-        font-size: 2.2rem;
+        font-size: 2rem;
+    }
+
+    .subtitle {
+        font-size: 0.85rem;
+    }
+
+    .login-form {
+        gap: var(--spacing-md);
     }
 
     .form-group {
-        gap: var(--spacing-sm);
+        gap: 6px;
     }
 
     .form-group label {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
 
     .form-group input {
-        padding: var(--spacing-md);
+        padding: 8px;
         font-size: 16px;
         min-height: 44px;
-        border-radius: 10px;
+        border-radius: 8px;
     }
 
     .avatar-selector {
         grid-template-columns: repeat(2, 1fr);
-        gap: var(--spacing-md);
+        gap: 8px;
     }
 
     .avatar-option {
-        padding: var(--spacing-md);
-        min-height: 90px;
-        justify-content: center;
+        padding: 8px;
+        min-height: 80px;
     }
 
     .avatar-emoji {
-        font-size: 2.2rem;
-        margin-bottom: var(--spacing-sm);
+        font-size: 2rem;
+        margin-bottom: 4px;
     }
 
     .avatar-option p {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
     }
 
     .btn-join {
-        padding: var(--spacing-md) var(--spacing-lg);
-        min-height: 48px;
-        font-size: 1rem;
-        border-radius: 10px;
+        padding: 10px var(--spacing-lg);
+        min-height: 44px;
+        font-size: 0.95rem;
+        border-radius: 8px;
+    }
+
+    .login-info {
+        font-size: 0.8rem;
     }
 
     /* Modals Mobile */
     .modal-content {
         max-width: 95vw;
-        max-height: 85vh;
+        max-height: 80vh;
         width: 95vw;
-        border-radius: 15px;
+        border-radius: 12px;
     }
 
     .modal-header {
-        padding: var(--spacing-md);
+        padding: 8px;
+        gap: 8px;
     }
 
     .modal-header h2 {
-        font-size: 1.3rem;
+        font-size: 1.2rem;
     }
 
     .btn-close-modal {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
+        padding: 0;
+        min-width: 30px;
     }
 
     .modal-body {
-        padding: var(--spacing-md);
+        padding: 8px;
     }
 
     /* Quiz Mobile */
+    .quiz-question {
+        margin-bottom: 8px;
+    }
+
     .quiz-question h3 {
-        font-size: 1.1rem;
+        font-size: 1rem;
+        margin-bottom: 8px;
+    }
+
+    .quiz-timer {
+        margin-bottom: 12px;
     }
 
     .timer-circle {
-        width: 100px;
-        height: 100px;
+        width: 90px;
+        height: 90px;
     }
 
     .timer-circle span {
-        font-size: 1.8rem;
+        font-size: 1.5rem;
+    }
+
+    .quiz-options {
+        gap: 6px;
     }
 
     .quiz-option {
-        padding: var(--spacing-md);
-        font-size: 0.95rem;
-        min-height: 44px;
-        border-radius: 8px;
+        padding: 8px;
+        font-size: 0.9rem;
+        min-height: 40px;
+        border-radius: 6px;
+    }
+
+    .quiz-result {
+        padding: 8px;
+        font-size: 1rem;
     }
 
     /* Duel Mobile */
+    .duel-info {
+        padding: 8px;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        border-radius: 6px;
+    }
+
+    .duel-question {
+        padding: 8px;
+        margin-bottom: 8px;
+        border-radius: 6px;
+    }
+
     .duel-question-text {
-        font-size: 1.1rem;
+        font-size: 1rem;
+        margin-bottom: 8px;
+    }
+
+    .duel-options {
+        gap: 6px;
     }
 
     .duel-option {
-        padding: var(--spacing-md);
-        font-size: 0.95rem;
-        min-height: 44px;
-        border-radius: 8px;
+        padding: 8px;
+        font-size: 0.9rem;
+        min-height: 40px;
+        border-radius: 6px;
     }
 
-    /* Challenge Mobile */
+    .duel-timer {
+        padding: 6px;
+        font-size: 0.9rem;
+        border-radius: 6px;
+    }
+
+    /* Challenge Modal Mobile */
     .challenge-modal {
-        max-height: 90vh;
+        max-height: 85vh;
+    }
+
+    .challenge-overlay {
+        border-radius: 12px;
     }
 
     .challenge-content {
@@ -2009,116 +2227,78 @@ body {
     }
 
     .challenge-content h2 {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
+        margin-bottom: 12px;
     }
 
     .challenge-text-big {
-        font-size: 1.8rem;
-        margin-bottom: var(--spacing-lg);
+        font-size: 1.6rem;
+        margin-bottom: 12px;
+        line-height: 1.4;
     }
 
     .btn-challenge-done {
-        padding: var(--spacing-md) var(--spacing-lg);
-        min-height: 48px;
-        font-size: 1rem;
+        padding: 8px var(--spacing-lg);
+        min-height: 44px;
+        font-size: 0.95rem;
+        border-radius: 8px;
     }
 
     /* Áudio Mobile */
     .audio-message {
-        margin: var(--spacing-sm) 0;
+        margin: 6px 0;
+        gap: 6px;
+    }
+
+    .audio-message-header {
+        gap: 4px;
+        margin-bottom: 4px;
+    }
+
+    .audio-message-username {
+        font-size: 0.8rem;
+    }
+
+    .audio-message-time {
+        font-size: 0.7rem;
     }
 
     .audio-player {
-        padding: var(--spacing-md);
-        border-radius: 10px;
-        gap: var(--spacing-sm);
+        padding: 8px;
+        gap: 8px;
+        border-radius: 6px;
     }
 
     .audio-player audio {
-        height: 28px;
+        height: 24px;
     }
 
     .audio-play-btn {
-        padding: 0.6rem 1rem;
-        font-size: 0.9rem;
-        min-height: 40px;
+        padding: 6px 10px;
+        font-size: 0.85rem;
+        min-height: 36px;
+        border-radius: 6px;
+    }
+
+    .audio-progress-bar {
+        height: 4px;
+        border-radius: 2px;
+    }
+
+    /* Hamburger Menu */
+    .hamburger-menu {
+        display: flex;
+        top: 8px;
+        right: 8px;
+        width: 44px;
+        height: 44px;
         border-radius: 8px;
     }
 
-    /* Ranking Mobile */
-    .ranking-item {
-        padding: var(--spacing-md);
-        gap: var(--spacing-md);
-    }
-
-    .ranking-position {
-        font-size: 1.2rem;
-        min-width: 35px;
-    }
-
-    .ranking-position.gold {
-        font-size: 1.4rem;
-    }
-
-    .ranking-name {
-        font-size: 0.95rem;
-    }
-
-    .ranking-points {
-        font-size: 0.9rem;
-    }
-
-    /* Users List Mobile */
-    .user-item {
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: 8px;
-    }
-
-    .user-item-avatar {
-        font-size: 1.3rem;
-    }
-
-    .user-item-name {
-        font-size: 0.9rem;
-    }
-
-    .user-item-points {
-        font-size: 0.8rem;
-    }
-
-    /* Room Stats Mobile */
-    .room-stats {
-        font-size: 0.9rem;
-    }
-
-    .room-stats p {
-        padding: var(--spacing-sm) 0;
-    }
-
-    /* Last Challenge Mobile */
-    .last-challenge {
-        padding: var(--spacing-md);
-        font-size: 0.9rem;
-        border-radius: 8px;
-    }
-
-    /* Challenge Display Mobile */
-    .challenge-display {
-        padding: var(--spacing-md);
-        border-radius: 10px;
-        margin: var(--spacing-sm) 0;
-    }
-
-    .challenge-label {
-        font-size: 0.8rem;
-    }
-
-    .challenge-text {
-        font-size: 1.1rem;
-    }
-
-    .challenge-drawn-by {
-        font-size: 0.8rem;
+    .hamburger-menu span {
+        width: 20px;
+        height: 2.5px;
+        gap: 4px;
     }
 }
 

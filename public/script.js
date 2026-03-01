@@ -68,7 +68,7 @@ function initMobileMenu() {
         hamburgerBtn.classList.toggle('active');
     });
 
-    // Tab switching
+    // Tab switching with proper content display
     chatTabs.forEach(tab => {
         tab.addEventListener('click', () => {
             const tabName = tab.getAttribute('data-tab');
@@ -77,31 +77,55 @@ function initMobileMenu() {
         });
     });
 
-    // Auto-switch to messages when message received
+    // Auto-switch to messages when new message arrives
     socket.on('receive-message', () => {
         if (window.innerWidth <= 768) {
-            switchTab('messages');
+            setTimeout(() => switchTab('messages'), 100);
+        }
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            // If desktop, show all sidebars
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('active'));
+            hamburgerBtn.classList.remove('active');
+        } else {
+            // If mobile, only show active tab
+            const activeBtn = document.querySelector('.chat-tab-btn.active');
+            if (activeBtn) {
+                switchTab(activeBtn.getAttribute('data-tab'));
+            }
         }
     });
 }
 
 function switchTab(tabName) {
-    // Hide all tabs
+    // Hide all tab content
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
     });
 
-    // Update buttons
+    // Remove active from all buttons
     document.querySelectorAll('.chat-tab-btn').forEach(btn => {
         btn.classList.remove('active');
     });
 
-    // Show selected tab
+    // Show selected tab content
     const tabContent = document.getElementById(tabName + '-content');
     if (tabContent) {
         tabContent.classList.add('active');
+        // Ensure proper flex display
+        if (tabName === 'messages') {
+            tabContent.style.display = 'flex';
+            tabContent.style.flexDirection = 'column';
+        } else {
+            tabContent.style.display = 'flex';
+            tabContent.style.flexDirection = 'column';
+        }
     }
 
+    // Activate button
     const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
     if (activeBtn) {
         activeBtn.classList.add('active');
@@ -110,7 +134,9 @@ function switchTab(tabName) {
     // Focus message input if switching to messages
     if (tabName === 'messages') {
         setTimeout(() => {
-            messageInput?.focus?.();
+            if (messageInput) {
+                messageInput.focus();
+            }
         }, 100);
     }
 }
@@ -122,14 +148,21 @@ function closeMobileMenu() {
     }
 }
 
-// Initialize mobile menu when chat screen is shown
+// Initialize mobile features
 function setupMobileUIOnLogin() {
     if (window.innerWidth <= 768) {
         // Default to messages tab on mobile
-        const tabContent = document.getElementById('messages-content');
-        if (tabContent) {
-            tabContent.classList.add('active');
+        const messagesContent = document.getElementById('messages-content');
+        if (messagesContent) {
+            messagesContent.classList.add('active');
+            messagesContent.style.display = 'flex';
+            messagesContent.style.flexDirection = 'column';
         }
+        // Deactivate others
+        const sidebarContent = document.getElementById('sidebar-content');
+        const gamesContent = document.getElementById('games-content');
+        if (sidebarContent) sidebarContent.classList.remove('active');
+        if (gamesContent) gamesContent.classList.remove('active');
     }
 }
 
@@ -138,7 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputs = document.querySelectorAll('input[type="text"], textarea, input[type="password"]');
     inputs.forEach(input => {
         input.addEventListener('focus', (e) => {
-            // Only set font size to 16px to prevent zoom
             e.target.style.fontSize = '16px';
         });
     });
