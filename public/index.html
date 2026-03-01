@@ -91,14 +91,16 @@
         <!-- Header da Sala -->
         <header class="chat-header">
             <div class="header-content">
-                <div class="user-info">
+                <div class="user-info" id="desktop-user-info">
                     <span id="user-avatar-header" class="user-avatar">🔥</span>
                     <div class="user-name-info">
                         <h2 id="user-name-header">Usuário</h2>
                         <p class="user-status">🟢 Online</p>
                     </div>
                 </div>
-                <button id="btn-logout" class="btn-logout">Sair</button>
+                <div class="header-top">
+                    <button id="btn-logout" class="btn-logout">Sair</button>
+                </div>
             </div>
         </header>
 
@@ -107,6 +109,15 @@
             <button class="chat-tab-btn active" data-tab="messages">💬 Chat</button>
             <button class="chat-tab-btn" data-tab="games">🎮 Games</button>
             <button class="chat-tab-btn" data-tab="sidebar">📊 Info</button>
+        </div>
+
+        <!-- User Info Bar (Mobile) -->
+        <div class="user-info-bar" id="user-info-bar">
+            <span id="user-avatar-header" class="user-avatar">🔥</span>
+            <div class="user-name-info">
+                <h2 id="user-name-header">Usuário</h2>
+                <p class="user-status">🟢 Online</p>
+            </div>
         </div>
 
         <main class="chat-main">
