@@ -399,10 +399,6 @@ body {
     display: flex;
 }
 
-.user-info-bar {
-    display: none;
-}
-
 /* Desktop: Show user info in header */
 @media (min-width: 769px) {
     .header-content {
@@ -1802,35 +1798,7 @@ body {
         -webkit-overflow-scrolling: touch;
     }
 
-    /* User Info Bar Mobile */
-    .user-info-bar {
-        display: flex;
-        padding: 6px 10px;
-        background: rgba(26, 31, 58, 0.95);
-        border-bottom: 1px solid var(--border-color);
-        align-items: center;
-        gap: 6px;
-        height: auto;
-    }
 
-    .user-info-bar .user-avatar {
-        font-size: 1.4rem;
-        flex-shrink: 0;
-    }
-
-    .user-info-bar .user-name-info h2 {
-        font-size: 0.75rem;
-        margin: 0;
-        font-weight: 600;
-    }
-
-    .user-info-bar .user-name-info p {
-        font-size: 0.65rem;
-        margin: 0;
-        color: var(--success);
-    }
-
-    /* Already added but duplicated - removing from above */
 
     .chat-tabs::-webkit-scrollbar {
         height: 3px;
@@ -1919,8 +1887,8 @@ body {
         flex-direction: column;
         padding: 0;
         gap: 0;
-        height: calc(100vh - 40px - 40px - 40px);
-        min-height: calc(100vh - 40px - 40px - 40px);
+        height: calc(100vh - 40px - 40px);
+        min-height: calc(100vh - 40px - 40px);
     }
 
     /* Sidebar Mobile - Hidden by default */

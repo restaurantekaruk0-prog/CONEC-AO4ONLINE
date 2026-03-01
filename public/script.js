@@ -117,8 +117,9 @@ function initSwipeDetection() {
 
     // Detect swipe only on the main container
     document.addEventListener('touchstart', (e) => {
-        // Don't track swipes on input fields
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        // Don't track swipes on buttons, inputs, or textareas
+        const target = e.target;
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'BUTTON' || target.closest('button')) {
             return;
         }
         touchStartX = e.touches[0].clientX;
@@ -137,8 +138,9 @@ function initSwipeDetection() {
     }, false);
 
     document.addEventListener('touchend', (e) => {
-        // Don't process if scrolling or on input
-        if (isScrolling || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        // Don't process if scrolling or on button/input
+        const target = e.target;
+        if (isScrolling || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'BUTTON' || target.closest('button')) {
             return;
         }
         
@@ -179,43 +181,29 @@ function handleSwipe() {
 }
 
 function switchTab(tabName) {
-    // Hide all tab content
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
+    // Remove active from all tabs and buttons
+    document.querySelectorAll('.tab-content').forEach(el => {
+        el.classList.remove('active');
+        el.style.display = '';
+    });
+    document.querySelectorAll('.chat-tab-btn').forEach(el => {
+        el.classList.remove('active');
     });
 
-    // Remove active from all buttons
-    document.querySelectorAll('.chat-tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-
-    // Show selected tab content
+    // Add active to selected tab and button
     const tabContent = document.getElementById(tabName + '-content');
     if (tabContent) {
         tabContent.classList.add('active');
-        // Ensure proper flex display
-        if (tabName === 'messages') {
-            tabContent.style.display = 'flex';
-            tabContent.style.flexDirection = 'column';
-        } else {
-            tabContent.style.display = 'flex';
-            tabContent.style.flexDirection = 'column';
-        }
     }
 
-    // Activate button
-    const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
-    if (activeBtn) {
-        activeBtn.classList.add('active');
+    const tabBtn = document.querySelector(`.chat-tab-btn[data-tab="${tabName}"]`);
+    if (tabBtn) {
+        tabBtn.classList.add('active');
     }
 
-    // Focus message input if switching to messages
+    // Focus input if switching to messages
     if (tabName === 'messages') {
-        setTimeout(() => {
-            if (messageInput) {
-                messageInput.focus();
-            }
-        }, 100);
+        setTimeout(() => messageInput?.focus(), 100);
     }
 }
 
@@ -229,18 +217,7 @@ function closeMobileMenu() {
 // Initialize mobile features
 function setupMobileUIOnLogin() {
     if (window.innerWidth <= 768) {
-        // Default to messages tab on mobile
-        const messagesContent = document.getElementById('messages-content');
-        if (messagesContent) {
-            messagesContent.classList.add('active');
-            messagesContent.style.display = 'flex';
-            messagesContent.style.flexDirection = 'column';
-        }
-        // Deactivate others
-        const sidebarContent = document.getElementById('sidebar-content');
-        const gamesContent = document.getElementById('games-content');
-        if (sidebarContent) sidebarContent.classList.remove('active');
-        if (gamesContent) gamesContent.classList.remove('active');
+        switchTab('messages');
     }
 }
 
