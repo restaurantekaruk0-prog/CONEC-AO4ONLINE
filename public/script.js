@@ -44,7 +44,6 @@ const rankingList = document.getElementById('ranking-list');
 const btnDrawChallenge = document.getElementById('btn-draw-challenge');
 const btnQuiz = document.getElementById('btn-quiz');
 const btnDuel = document.getElementById('btn-duel');
-const btnRecord = document.getElementById('btn-record');
 const btnChallengeBtn = document.querySelector('.btn-challenge-btn');
 
 // DOM - Modals
@@ -666,63 +665,7 @@ function closeDuelModal() {
 // AUDIO RECORDING
 // ============================================
 
-if (btnRecord) {
-    btnRecord.addEventListener('click', async () => {
-        if (!isRecording) {
-            try {
-                mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(mediaStream);
-                audioChunks = [];
-                
-                mediaRecorder.ondataavailable = (event) => {
-                    audioChunks.push(event.data);
-                };
-                
-                mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        socket.emit('send-audio', { audio: reader.result });
-                        
-                        // Parar todas as tracks do stream
-                        mediaStream.getTracks().forEach(track => track.stop());
-                        
-                        btnRecord.classList.remove('recording');
-                        const recordStatus = btnRecord.querySelector('#record-status');
-                        if (recordStatus) recordStatus.textContent = '🎤 Gravar';
-                        
-                        const btnRecordChat = document.getElementById('btn-record-chat');
-                        if (btnRecordChat) {
-                            btnRecordChat.classList.remove('recording');
-                        }
-                        
-                        isRecording = false;
-                    };
-                    reader.readAsDataURL(audioBlob);
-                };
-                
-                mediaRecorder.start();
-                isRecording = true;
-                btnRecord.classList.add('recording');
-                const recordStatus = btnRecord.querySelector('#record-status');
-                if (recordStatus) recordStatus.textContent = '⏹️ Parar';
-                
-                // Sincronizar visual do botão no chat
-                const btnRecordChat = document.getElementById('btn-record-chat');
-                if (btnRecordChat) {
-                    btnRecordChat.classList.add('recording');
-                }
-            } catch (err) {
-                console.error('Erro ao acessar microfone:', err);
-                alert('Microfone não disponível ou permissão negada');
-            }
-        } else if (mediaRecorder) {
-            mediaRecorder.stop();
-        }
-    });
-}
-
-// Adicionar evento ao botão de áudio na chat
+// Adicionar evento ao botão de áudio no chat
 const btnRecordChat = document.getElementById('btn-record-chat');
 if (btnRecordChat) {
     btnRecordChat.addEventListener('click', async (e) => {
