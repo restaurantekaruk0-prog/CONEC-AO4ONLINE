@@ -1,0 +1,40 @@
+# ⚡ QUICK START: RENDER
+
+## Em 5 Minutos para o Ar! 🚀
+
+### 1️⃣ GitHub (2 min)
+```bash
+cd c:\Users\User\OneDrive\Desktop\jogo\conexao4-online
+
+git init
+git add .
+git commit -m "Conexão 4"
+git branch -M main
+git remote add origin https://github.com/SEU-USUARIO/conexao4-online.git
+git push -u origin main
+```
+
+### 2️⃣ Render (3 min)
+1. Acesse https://render.com/
+2. Clique "Sign Up" → "Continue with GitHub"
+3. Clique "New +" → "Web Service"
+4. Selecione `conexao4-online`
+5. Espera vicar verde (🟢 Live)
+
+### 3️⃣ Pronto! ✅
+Link gerado: `https://seu-nome.onrender.com`
+
+---
+
+## Para Atualizar Depois
+```bash
+git add .
+git commit -m "Mudança"
+git push origin main
+```
+
+Auto-deploy automático! ⚡
+
+---
+
+Ver [GUIA_RENDER.md](GUIA_RENDER.md) para detalhes.

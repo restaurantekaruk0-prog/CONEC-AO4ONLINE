@@ -1,0 +1,47 @@
+🚀 LINKS RÁPIDOS PARA DEPLOY
+
+1. CRIAR CONTA GITHUB (se não tiver)
+   https://github.com/signup
+
+2. CRIAR REPOSITÓRIO
+   https://github.com/new
+   
+   Nome: conexao4-online
+   Visibility: PUBLIC
+
+3. EXECUTAR SCRIPT DE UPLOAD
+   Abra PowerShell na pasta do projeto e execute:
+   .\UPLOAD_GITHUB.ps1
+   
+   OU manualmente:
+   git init
+   git add .
+   git commit -m "Conexão 4 Premium"
+   git branch -M main
+   git remote add origin https://github.com/seu-usuario/conexao4-online.git
+   git push -u origin main
+
+4. DEPLOY NO RENDER
+   https://render.com
+   
+   Sign Up → Continue with GitHub
+   New + → Web Service
+   Conecte: conexao4-online
+   Create Web Service
+
+5. AGUARDE (2-3 min)
+   Quando ficar 🟢 Live, clique no link!
+
+6. PRONTO! 🎉
+   Sua app está no ar!
+
+---
+
+📖 LEIA:
+- PASSO_A_PASSO.md (guia completo em português)
+- GUIA_RENDER.md (mais detalhes)
+- QUICK_RENDER.txt (resumão)
+
+❓ DÚVIDAS?
+- GitHub Docs: https://docs.github.com
+- Render Docs: https://render.com/docs

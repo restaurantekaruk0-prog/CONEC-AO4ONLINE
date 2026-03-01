@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conexão 4 - Premium | Chat em Tempo Real</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ============================================
+         TELA 1: LOGIN
+         ============================================ -->
+    <div id="login-screen" class="screen active">
+        <div class="login-container">
+            <!-- Logo/Título -->
+            <div class="login-header">
+                <h1 class="title-glow">Conexão 4</h1>
+                <p class="subtitle">Premium Chat</p>
+            </div>
+
+            <!-- Formulário -->
+            <form id="login-form" class="login-form">
+                <!-- Campo de Nome -->
+                <div class="form-group">
+                    <label for="username">Seu Nome:</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        placeholder="Digite seu nome..." 
+                        maxlength="20"
+                        required
+                    >
+                </div>
+
+                <!-- Seleção de Avatar -->
+                <div class="form-group">
+                    <label>Escolha seu Avatar:</label>
+                    <div class="avatar-selector">
+                        <div class="avatar-option" data-avatar="🔥">
+                            <span class="avatar-emoji">🔥</span>
+                            <p>Fogo</p>
+                        </div>
+                        <div class="avatar-option" data-avatar="💘">
+                            <span class="avatar-emoji">💘</span>
+                            <p>Amor</p>
+                        </div>
+                        <div class="avatar-option" data-avatar="🌙">
+                            <span class="avatar-emoji">🌙</span>
+                            <p>Lua</p>
+                        </div>
+                        <div class="avatar-option" data-avatar="⭐">
+                            <span class="avatar-emoji">⭐</span>
+                            <p>Estrela</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botão Entrar -->
+                <button type="submit" class="btn-join">
+                    <span>Entrar na Sala</span>
+                    <span class="btn-glow"></span>
+                </button>
+
+                <!-- Mensagens de Erro -->
+                <div id="login-error" class="error-message"></div>
+                <div id="room-full-message" class="room-full-alert"></div>
+            </form>
+
+            <!-- Info -->
+            <div class="login-info">
+                <p>⚠️ Máximo de 4 pessoas simultaneamente</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         TELA 2: SALA PRINCIPAL
+         ============================================ -->
+    <div id="chat-screen" class="screen">
+        <!-- Header da Sala -->
+        <header class="chat-header">
+            <div class="header-content">
+                <div class="user-info">
+                    <span id="user-avatar-header" class="user-avatar">🔥</span>
+                    <div class="user-name-info">
+                        <h2 id="user-name-header">Usuário</h2>
+                        <p class="user-status">🟢 Online</p>
+                    </div>
+                </div>
+                <button id="btn-logout" class="btn-logout">Sair</button>
+            </div>
+        </header>
+
+        <main class="chat-main">
+            <!-- Sidebar: Usuários Online e Info -->
+            <aside class="sidebar">
+                <!-- Usuários Online -->
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">👥 Online</h3>
+                    <div id="online-users" class="users-list">
+                        <p class="placeholder">Aguardando...</p>
+                    </div>
+                </div>
+
+                <!-- Room Stats -->
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">📊 Sala</h3>
+                    <div id="room-stats" class="room-stats">
+                        <p><span id="user-count">0</span>/4 Online</p>
+                    </div>
+                </div>
+
+                <!-- Separador -->
+                <hr class="sidebar-divider">
+
+                <!-- Desafios -->
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">🎯 Desafios</h3>
+                    <button id="btn-draw-challenge" class="btn-challenge">
+                        Sortear Desafio
+                    </button>
+                </div>
+
+                <!-- Último Desafio -->
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">📌 Último Desafio</h3>
+                    <div id="last-challenge" class="last-challenge">
+                        <p class="placeholder">Nenhum desafio ainda</p>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Chat Principal -->
+            <section class="chat-section">
+                <!-- Mensagens -->
+                <div id="messages-container" class="messages-container">
+                    <div class="welcome-message">
+                        <h3>Bem-vindo ao Conexão 4</h3>
+                        <p>Aproveite o chat com seus amigos!</p>
+                    </div>
+                </div>
+
+                <!-- Input de Mensagem -->
+                <form id="message-form" class="message-input-form">
+                    <input 
+                        type="text" 
+                        id="message-input" 
+                        placeholder="Digite sua mensagem..." 
+                        maxlength="200"
+                        autocomplete="off"
+                    >
+                    <button type="submit" class="btn-send">
+                        <span>Enviar</span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Ranking -->
+            <aside class="sidebar ranking-sidebar">
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">🏆 Ranking</h3>
+                    <div id="ranking-list" class="ranking-list">
+                        <p class="placeholder">Aguardando...</p>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
