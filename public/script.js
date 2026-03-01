@@ -240,6 +240,9 @@ function addSystemMessage(message) {
 function addAudioMessage(data) {
     const audioEl = document.createElement('div');
     audioEl.className = 'audio-message';
+    
+    const audioId = 'audio-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    
     audioEl.innerHTML = `
         <span class="message-avatar">${data.avatar}</span>
         <div class="audio-player">
@@ -248,16 +251,67 @@ function addAudioMessage(data) {
                     <span class="audio-message-username">${escapeHtml(data.username)}</span>
                     <span class="audio-message-time">${data.timestamp}</span>
                 </div>
-                <audio controls controlsList="nodownload" style="width: 100%; margin-top: 0.5rem;">
-                    <source src="${data.audio}" type="audio/webm">
-                    Seu navegador não suporta áudio.
-                </audio>
+                <div class="audio-player-controls">
+                    <button class="audio-play-btn" id="play-${audioId}">▶️ PLAY</button>
+                    <audio id="${audioId}" controlsList="nodownload" style="display: none;">
+                        <source src="${data.audio}" type="audio/webm">
+                        Seu navegador não suporta áudio.
+                    </audio>
+                    <div class="audio-progress-bar" id="progress-${audioId}">
+                        <div class="audio-progress-fill"></div>
+                    </div>
+                </div>
             </div>
         </div>
     `;
     
     messagesContainer.appendChild(audioEl);
     scrollToBottom();
+    
+    // Setup dos controles de áudio
+    const audioElement = document.getElementById(audioId);
+    const playBtn = document.getElementById('play-' + audioId);
+    const progressBar = document.getElementById('progress-' + audioId);
+    const progressFill = progressBar.querySelector('.audio-progress-fill');
+    
+    playBtn.addEventListener('click', () => {
+        if (audioElement.paused) {
+            audioElement.play();
+            playBtn.textContent = '⏸️ PAUSE';
+            playBtn.classList.add('playing');
+        } else {
+            audioElement.pause();
+            playBtn.textContent = '▶️ PLAY';
+            playBtn.classList.remove('playing');
+        }
+    });
+    
+    audioElement.addEventListener('play', () => {
+        playBtn.textContent = '⏸️ PAUSE';
+        playBtn.classList.add('playing');
+    });
+    
+    audioElement.addEventListener('pause', () => {
+        playBtn.textContent = '▶️ PLAY';
+        playBtn.classList.remove('playing');
+    });
+    
+    audioElement.addEventListener('ended', () => {
+        playBtn.textContent = '▶️ PLAY';
+        playBtn.classList.remove('playing');
+        progressFill.style.width = '0%';
+    });
+    
+    audioElement.addEventListener('timeupdate', () => {
+        const percent = (audioElement.currentTime / audioElement.duration) * 100;
+        progressFill.style.width = percent + '%';
+    });
+    
+    progressBar.addEventListener('click', (e) => {
+        const rect = progressBar.getBoundingClientRect();
+        const percent = (e.clientX - rect.left) / rect.width;
+        audioElement.currentTime = percent * audioElement.duration;
+    });
 }
 
 function scrollToBottom() {
