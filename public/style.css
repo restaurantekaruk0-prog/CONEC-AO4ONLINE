@@ -1315,6 +1315,42 @@ body {
     margin-bottom: var(--spacing-lg);
 }
 
+.duel-question-text {
+    font-size: 1.3em;
+    font-weight: 600;
+    margin-bottom: var(--spacing-lg);
+    color: var(--text-primary);
+}
+
+.duel-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.duel-option {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 2px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: left;
+    font-weight: 500;
+}
+
+.duel-option:hover {
+    background: rgba(253, 121, 168, 0.2);
+    border-color: var(--accent);
+    transform: translateX(5px);
+}
+
+.duel-option:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .duel-timer {
     text-align: center;
     padding: var(--spacing-md);

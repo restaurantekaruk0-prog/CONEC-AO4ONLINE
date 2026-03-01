@@ -150,6 +150,25 @@ socket.on('quiz-ended', () => {
     closeQuizModal();
 });
 
+socket.on('duel-started', (data) => {
+    showDuelModal(data);
+});
+
+socket.on('duel-winner', (data) => {
+    const duelInfo = document.getElementById('duel-info');
+    duelInfo.innerHTML = `<div style="color: #00b894; font-weight: bold; font-size: 1.2em;">🏆 ${data.avatar} ${data.username} venceu o duelo! (+${data.points} pts)</div>`;
+    document.querySelectorAll('.duel-option').forEach(b => b.disabled = true);
+    playConfetti();
+    
+    setTimeout(() => {
+        closeDuelModal();
+    }, 3000);
+});
+
+socket.on('duel-ended', () => {
+    closeDuelModal();
+});
+
 socket.on('receive-audio', (data) => {
     addAudioMessage(data);
 });
@@ -349,6 +368,60 @@ function closeQuizModal() {
 
 if (quizClose) {
     quizClose.addEventListener('click', closeQuizModal);
+}
+
+// ============================================
+// DUELO
+// ============================================
+
+if (btnDuel) {
+    btnDuel.addEventListener('click', () => {
+        socket.emit('start-duel');
+    });
+}
+
+function showDuelModal(data) {
+    const duelInfo = document.getElementById('duel-info');
+    const duelQuestion = document.getElementById('duel-question');
+    
+    duelInfo.textContent = `Duelo iniciado por: ${data.initiatedBy}`;
+    duelQuestion.innerHTML = `
+        <div class="duel-question-text">${data.question}</div>
+        <div class="duel-options">
+    `;
+    
+    data.options.forEach((option, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'duel-option';
+        btn.textContent = option;
+        btn.addEventListener('click', () => {
+            socket.emit('answer-duel', { answerIndex: index });
+            document.querySelectorAll('.duel-option').forEach(b => b.disabled = true);
+        });
+        duelQuestion.querySelector('.duel-options').appendChild(btn);
+    });
+    
+    startDuelTimer(data.timeLimit);
+    duelModal.classList.add('active');
+}
+
+function startDuelTimer(seconds) {
+    let remaining = seconds;
+    const timerText = document.getElementById('duel-timer-text');
+    
+    const interval = setInterval(() => {
+        remaining--;
+        timerText.textContent = remaining;
+        
+        if (remaining <= 0) {
+            clearInterval(interval);
+            socket.emit('end-duel');
+        }
+    }, 1000);
+}
+
+function closeDuelModal() {
+    duelModal.classList.remove('active');
 }
 
 // ============================================

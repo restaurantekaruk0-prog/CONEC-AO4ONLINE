@@ -342,6 +342,86 @@ io.on('connection', (socket) => {
   });
 
   /**
+   * Evento: Iniciar Duelo
+   */
+  socket.on('start-duel', () => {
+    const user = usersData[socket.id];
+    
+    if (!user) return;
+
+    // Selecionar quiz para o duelo
+    const duelQuestion = getRandomQuiz();
+    gameState.currentGame = 'duel';
+    gameState.gameData = duelQuestion;
+    gameState.answers = {};
+    gameState.duelWinner = null;
+
+    // Enviar duelo para todos
+    io.to(ROOM_NAME).emit('duel-started', {
+      initiatedBy: user.username,
+      question: duelQuestion.question,
+      options: duelQuestion.options,
+      timeLimit: 15
+    });
+
+    console.log(`⚔️ Duelo iniciado por ${user.username}`);
+
+    // Término automático do duelo após 15s
+    setTimeout(() => {
+      if (gameState.currentGame === 'duel') {
+        io.to(ROOM_NAME).emit('duel-ended');
+        gameState.currentGame = null;
+      }
+    }, 16000);
+  });
+
+  /**
+   * Evento: Responder Duelo (primeiro a responder corretamente ganha)
+   */
+  socket.on('answer-duel', (answerData) => {
+    const user = usersData[socket.id];
+    
+    if (!user || gameState.currentGame !== 'duel') return;
+
+    // Se já tem vencedor, ignora respostas posteriores
+    if (gameState.duelWinner) return;
+
+    // Verificar se resposta está correta
+    const isCorrect = answerData.answerIndex === gameState.gameData.correctAnswer;
+
+    if (isCorrect) {
+      // Marcar vencedor
+      gameState.duelWinner = user.username;
+      
+      // Adicionar pontos ao vencedor
+      usersData[socket.id].points += 15;
+
+      // Notificar para todos
+      io.to(ROOM_NAME).emit('duel-winner', {
+        winner: user.username,
+        avatar: user.avatar,
+        points: 15
+      });
+
+      // Atualizar ranking
+      io.to(ROOM_NAME).emit('update-ranking', getOnlineUsers());
+
+      console.log(`⚔️ ${user.username} venceu o duelo!`);
+    }
+  });
+
+  /**
+   * Evento: Término do Duelo
+   */
+  socket.on('end-duel', () => {
+    if (gameState.currentGame === 'duel') {
+      io.to(ROOM_NAME).emit('duel-ended');
+      gameState.currentGame = null;
+      gameState.duelWinner = null;
+    }
+  });
+
+  /**
    * Evento: Receber Áudio
    */
   socket.on('send-audio', (audioData) => {
