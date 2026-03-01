@@ -60,6 +60,7 @@ const quizClose = document.getElementById('quiz-close');
 function initMobileMenu() {
     const hamburgerBtn = document.getElementById('hamburger-menu');
     const chatTabs = document.querySelectorAll('.chat-tab-btn');
+    const chatMain = document.querySelector('.chat-main');
     
     if (!hamburgerBtn) return;
 
@@ -76,6 +77,9 @@ function initMobileMenu() {
             switchTab(tabName);
         });
     });
+
+    // Swipe detection for tab switching
+    initSwipeDetection();
 
     // Auto-switch to messages when new message arrives
     socket.on('receive-message', () => {
@@ -98,6 +102,73 @@ function initMobileMenu() {
             }
         }
     });
+}
+
+// Swipe Detection
+let touchStartX = 0;
+let touchEndX = 0;
+let touchStartY = 0;
+let touchEndY = 0;
+
+function initSwipeDetection() {
+    const chatMain = document.querySelector('.chat-main');
+    if (!chatMain) return;
+
+    chatMain.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    }, false);
+
+    chatMain.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        touchEndY = e.changedTouches[0].screenY;
+        handleSwipe();
+    }, false);
+
+    // Also listen on messages container for better responsiveness
+    const messagesContainer = document.getElementById('messages-content');
+    if (messagesContainer) {
+        messagesContainer.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, false);
+
+        messagesContainer.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipe();
+        }, false);
+    }
+}
+
+function handleSwipe() {
+    // Only handle swipe if movement is primarily horizontal
+    const diffX = touchStartX - touchEndX;
+    const diffY = touchStartY - touchEndY;
+
+    // If vertical movement is greater than horizontal, ignore (scrolling)
+    if (Math.abs(diffY) > Math.abs(diffX)) {
+        return;
+    }
+
+    // Minimum swipe distance (50px)
+    const minSwipeDistance = 50;
+
+    if (Math.abs(diffX) > minSwipeDistance) {
+        const tabs = ['messages', 'games', 'sidebar'];
+        const currentTab = document.querySelector('.chat-tab-btn.active')?.getAttribute('data-tab') || 'messages';
+        const currentIndex = tabs.indexOf(currentTab);
+
+        if (diffX > 0) {
+            // Swiped left - go to next tab
+            const nextIndex = (currentIndex + 1) % tabs.length;
+            switchTab(tabs[nextIndex]);
+        } else {
+            // Swiped right - go to previous tab
+            const prevIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+            switchTab(tabs[prevIndex]);
+        }
+    }
 }
 
 function switchTab(tabName) {

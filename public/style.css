@@ -1830,18 +1830,41 @@ body {
         transform: scale(0.95);
     }
 
-    /* Conteúdo das abas */
-    .tab-content {
-        display: none;
-        flex: 1;
-        min-height: 0;
-        overflow: hidden;
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
     }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
 
-    .tab-content.active {
-        display: flex;
-        flex: 1;
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-100%);
     }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Conteúdo das abas */
+.tab-content {
+    display: none;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    animation: slideInRight 0.3s ease-out;
+}
+
+.tab-content.active {
+    display: flex;
+    flex: 1;
+}
 
     #messages-content {
         flex-direction: column;
