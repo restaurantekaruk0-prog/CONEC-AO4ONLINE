@@ -2,7 +2,11 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Conexão 4">
+    <meta name="theme-color" content="#0a0e27">
     <title>Conexão 4 - Premium | Chat em Tempo Real</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -77,6 +81,13 @@
          TELA 2: SALA PRINCIPAL
          ============================================ -->
     <div id="chat-screen" class="screen">
+        <!-- Menu Hambúrguer Mobile -->
+        <button id="hamburger-menu" class="hamburger-menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
         <!-- Header da Sala -->
         <header class="chat-header">
             <div class="header-content">
@@ -91,9 +102,16 @@
             </div>
         </header>
 
+        <!-- Abas Mobile -->
+        <div class="chat-tabs" id="chat-tabs">
+            <button class="chat-tab-btn active" data-tab="messages">💬 Chat</button>
+            <button class="chat-tab-btn" data-tab="games">🎮 Games</button>
+            <button class="chat-tab-btn" data-tab="sidebar">📊 Info</button>
+        </div>
+
         <main class="chat-main">
             <!-- Sidebar: Usuários Online e Info -->
-            <aside class="sidebar">
+            <aside class="sidebar tab-content" id="sidebar-content">
                 <!-- Usuários Online -->
                 <div class="sidebar-section">
                     <h3 class="sidebar-title">👥 Online</h3>
@@ -128,10 +146,18 @@
                         <p class="placeholder">Nenhum desafio ainda</p>
                     </div>
                 </div>
+
+                <!-- Ranking -->
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">🏆 Ranking</h3>
+                    <div id="ranking-list" class="ranking-list">
+                        <p class="placeholder">Aguardando...</p>
+                    </div>
+                </div>
             </aside>
 
             <!-- Chat Principal -->
-            <section class="chat-section">
+            <section class="chat-section tab-content active" id="messages-content">
                 <!-- Mensagens -->
                 <div id="messages-container" class="messages-container">
                     <div class="welcome-message">
@@ -158,7 +184,7 @@
     <!-- ============================================
          SIDEBAR 2: GAMES
          ============================================ -->
-            <aside class="sidebar games-sidebar">
+            <aside class="sidebar games-sidebar tab-content" id="games-content">
                 <div class="sidebar-section">
                     <h3 class="sidebar-title">🎮 GAMES</h3>
                     
@@ -184,7 +210,7 @@
                     <button id="btn-record" class="btn-record">
                         <span id="record-status">🎤 Gravar</span>
                     </button>
-                    <small style="color: var(--text-secondary); display: block; margin-top: 0.5rem;">
+                    <small style="color: var(--text-secondary); display: block; margin-top: 0.5rem; text-align: center;">
                         Clique para gravar e enviar áudio
                     </small>
                 </div>
@@ -197,13 +223,6 @@
                         <button class="btn-reaction" data-reaction="😂">😂</button>
                         <button class="btn-reaction" data-reaction="🔥">🔥</button>
                         <button class="btn-reaction" data-reaction="👀">👀</button>
-                    </div>
-                </div>
-            </aside>
-                <div class="sidebar-section">
-                    <h3 class="sidebar-title">🏆 Ranking</h3>
-                    <div id="ranking-list" class="ranking-list">
-                        <p class="placeholder">Aguardando...</p>
                     </div>
                 </div>
             </aside>

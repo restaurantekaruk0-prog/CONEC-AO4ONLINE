@@ -54,6 +54,97 @@ const challengeModal = document.getElementById('challenge-modal');
 const quizClose = document.getElementById('quiz-close');
 
 // ============================================
+// MOBILE MENU & TABS SYSTEM
+// ============================================
+
+function initMobileMenu() {
+    const hamburgerBtn = document.getElementById('hamburger-menu');
+    const chatTabs = document.querySelectorAll('.chat-tab-btn');
+    
+    if (!hamburgerBtn) return;
+
+    // Toggle hamburger menu
+    hamburgerBtn.addEventListener('click', () => {
+        hamburgerBtn.classList.toggle('active');
+    });
+
+    // Tab switching
+    chatTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabName = tab.getAttribute('data-tab');
+            closeMobileMenu();
+            switchTab(tabName);
+        });
+    });
+
+    // Auto-switch to messages when message received
+    socket.on('receive-message', () => {
+        if (window.innerWidth <= 768) {
+            switchTab('messages');
+        }
+    });
+}
+
+function switchTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Update buttons
+    document.querySelectorAll('.chat-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Show selected tab
+    const tabContent = document.getElementById(tabName + '-content');
+    if (tabContent) {
+        tabContent.classList.add('active');
+    }
+
+    const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+
+    // Focus message input if switching to messages
+    if (tabName === 'messages') {
+        setTimeout(() => {
+            messageInput?.focus?.();
+        }, 100);
+    }
+}
+
+function closeMobileMenu() {
+    const hamburgerBtn = document.getElementById('hamburger-menu');
+    if (hamburgerBtn) {
+        hamburgerBtn.classList.remove('active');
+    }
+}
+
+// Initialize mobile menu when chat screen is shown
+function setupMobileUIOnLogin() {
+    if (window.innerWidth <= 768) {
+        // Default to messages tab on mobile
+        const tabContent = document.getElementById('messages-content');
+        if (tabContent) {
+            tabContent.classList.add('active');
+        }
+    }
+}
+
+// Prevent zoom on input focus
+document.addEventListener('DOMContentLoaded', () => {
+    const inputs = document.querySelectorAll('input[type="text"], textarea, input[type="password"]');
+    inputs.forEach(input => {
+        input.addEventListener('focus', (e) => {
+            // Only set font size to 16px to prevent zoom
+            e.target.style.fontSize = '16px';
+        });
+    });
+});
+
+// ============================================
 // AVATAR SELECTION
 // ============================================
 
@@ -193,6 +284,10 @@ function enterChat() {
     
     loginScreen.classList.remove('active');
     chatScreen.classList.add('active');
+    
+    // Initialize mobile features
+    initMobileMenu();
+    setupMobileUIOnLogin();
     
     setTimeout(() => messageInput.focus(), 300);
 }
