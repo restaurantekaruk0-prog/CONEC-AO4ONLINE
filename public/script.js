@@ -109,36 +109,43 @@ let touchStartX = 0;
 let touchEndX = 0;
 let touchStartY = 0;
 let touchEndY = 0;
+let isScrolling = false;
 
 function initSwipeDetection() {
     const chatMain = document.querySelector('.chat-main');
-    if (!chatMain) return;
+    if (!chatMain || window.innerWidth > 768) return;
 
-    chatMain.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY;
+    // Detect swipe only on the main container
+    document.addEventListener('touchstart', (e) => {
+        // Don't track swipes on input fields
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            return;
+        }
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        isScrolling = false;
     }, false);
 
-    chatMain.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        touchEndY = e.changedTouches[0].screenY;
+    document.addEventListener('touchmove', (e) => {
+        const diffY = Math.abs(e.touches[0].clientY - touchStartY);
+        const diffX = Math.abs(e.touches[0].clientX - touchStartX);
+        
+        // If scrolling vertically, don't consider it a swipe
+        if (diffY > diffX) {
+            isScrolling = true;
+        }
+    }, false);
+
+    document.addEventListener('touchend', (e) => {
+        // Don't process if scrolling or on input
+        if (isScrolling || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            return;
+        }
+        
+        touchEndX = e.changedTouches[0].clientX;
+        touchEndY = e.changedTouches[0].clientY;
         handleSwipe();
     }, false);
-
-    // Also listen on messages container for better responsiveness
-    const messagesContainer = document.getElementById('messages-content');
-    if (messagesContainer) {
-        messagesContainer.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-            touchStartY = e.changedTouches[0].screenY;
-        }, false);
-
-        messagesContainer.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            touchEndY = e.changedTouches[0].screenY;
-            handleSwipe();
-        }, false);
-    }
 }
 
 function handleSwipe() {
@@ -706,6 +713,12 @@ if (btnRecord) {
                         btnRecord.classList.remove('recording');
                         const recordStatus = btnRecord.querySelector('#record-status');
                         if (recordStatus) recordStatus.textContent = '🎤 Gravar';
+                        
+                        const btnRecordChat = document.getElementById('btn-record-chat');
+                        if (btnRecordChat) {
+                            btnRecordChat.classList.remove('recording');
+                        }
+                        
                         isRecording = false;
                     };
                     reader.readAsDataURL(audioBlob);
@@ -716,6 +729,70 @@ if (btnRecord) {
                 btnRecord.classList.add('recording');
                 const recordStatus = btnRecord.querySelector('#record-status');
                 if (recordStatus) recordStatus.textContent = '⏹️ Parar';
+                
+                // Sincronizar visual do botão no chat
+                const btnRecordChat = document.getElementById('btn-record-chat');
+                if (btnRecordChat) {
+                    btnRecordChat.classList.add('recording');
+                }
+            } catch (err) {
+                console.error('Erro ao acessar microfone:', err);
+                alert('Microfone não disponível ou permissão negada');
+            }
+        } else if (mediaRecorder) {
+            mediaRecorder.stop();
+        }
+    });
+}
+
+// Adicionar evento ao botão de áudio na chat
+const btnRecordChat = document.getElementById('btn-record-chat');
+if (btnRecordChat) {
+    btnRecordChat.addEventListener('click', async (e) => {
+        e.preventDefault();
+        
+        if (!isRecording) {
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(mediaStream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+                
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        socket.emit('send-audio', { audio: reader.result });
+                        
+                        // Parar todas as tracks do stream
+                        mediaStream.getTracks().forEach(track => track.stop());
+                        
+                        btnRecordChat.classList.remove('recording');
+                        
+                        if (btnRecord) {
+                            btnRecord.classList.remove('recording');
+                            const recordStatus = btnRecord.querySelector('#record-status');
+                            if (recordStatus) recordStatus.textContent = '🎤 Gravar';
+                        }
+                        
+                        isRecording = false;
+                    };
+                    reader.readAsDataURL(audioBlob);
+                };
+                
+                mediaRecorder.start();
+                isRecording = true;
+                btnRecordChat.classList.add('recording');
+                
+                // Sincronizar visual do botão no games
+                if (btnRecord) {
+                    btnRecord.classList.add('recording');
+                    const recordStatus = btnRecord.querySelector('#record-status');
+                    if (recordStatus) recordStatus.textContent = '⏹️ Parar';
+                }
             } catch (err) {
                 console.error('Erro ao acessar microfone:', err);
                 alert('Microfone não disponível ou permissão negada');
