@@ -1,56 +1,73 @@
 /**
- * CONEXÃO 4 - PREMIUM
- * Script Frontend com Socket.io
+ * CONEXÃO 4 - ULTIMATE
+ * Chat avançado com Games, Áudio, Reações e muito mais!
  */
 
 // ============================================
-// CONFIGURAÇÃO INICIAL
+// SOCKET & DOM ELEMENTS
 // ============================================
 
 const socket = io();
 let currentUser = null;
 let selectedAvatar = '🔥';
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
 
-// Elementos do DOM
+// DOM - Screens
 const loginScreen = document.getElementById('login-screen');
 const chatScreen = document.getElementById('chat-screen');
+
+// DOM - Login
 const loginForm = document.getElementById('login-form');
-const messageForm = document.getElementById('message-form');
-const messageInput = document.getElementById('message-input');
-const messagesContainer = document.getElementById('messages-container');
-const onlineUsersList = document.getElementById('online-users');
-const rankingList = document.getElementById('ranking-list');
-const userCountElement = document.getElementById('user-count');
-const userNameHeader = document.getElementById('user-name-header');
-const userAvatarHeader = document.getElementById('user-avatar-header');
-const lastChallengeDiv = document.getElementById('last-challenge');
-const btnDrawChallenge = document.getElementById('btn-draw-challenge');
-const btnLogout = document.getElementById('btn-logout');
 const loginError = document.getElementById('login-error');
 const roomFullMessage = document.getElementById('room-full-message');
 
+// DOM - Chat
+const messagesContainer = document.getElementById('messages-container');
+const messageForm = document.getElementById('message-form');
+const messageInput = document.getElementById('message-input');
+
+// DOM - Header
+const userNameHeader = document.getElementById('user-name-header');
+const userAvatarHeader = document.getElementById('user-avatar-header');
+const btnLogout = document.getElementById('btn-logout');
+
+// DOM - Sidebar
+const onlineUsersList = document.getElementById('online-users');
+const userCountElement = document.getElementById('user-count');
+const lastChallengeDiv = document.getElementById('last-challenge');
+const rankingList = document.getElementById('ranking-list');
+
+// DOM - Games
+const btnDrawChallenge = document.getElementById('btn-draw-challenge');
+const btnQuiz = document.getElementById('btn-quiz');
+const btnDuel = document.getElementById('btn-duel');
+const btnRecord = document.getElementById('btn-record');
+const btnChallengeBtn = document.querySelector('.btn-challenge-btn');
+
+// DOM - Modals
+const quizModal = document.getElementById('quiz-modal');
+const duelModal = document.getElementById('duel-modal');
+const challengeModal = document.getElementById('challenge-modal');
+const quizClose = document.getElementById('quiz-close');
+
 // ============================================
-// SELEÇÃO DE AVATAR
+// AVATAR SELECTION
 // ============================================
 
 document.querySelectorAll('.avatar-option').forEach(option => {
     option.addEventListener('click', function() {
-        // Remove seleção anterior
-        document.querySelectorAll('.avatar-option').forEach(opt => {
-            opt.classList.remove('selected');
-        });
-        
-        // Seleciona novo avatar
+        document.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('selected'));
         this.classList.add('selected');
         selectedAvatar = this.getAttribute('data-avatar');
     });
 });
 
-// Pre-selecionar primeiro avatar
 document.querySelector('.avatar-option').classList.add('selected');
 
 // ============================================
-// SUBMISSÃO DO LOGIN
+// LOGIN
 // ============================================
 
 loginForm.addEventListener('submit', (e) => {
@@ -63,16 +80,10 @@ loginForm.addEventListener('submit', (e) => {
         return;
     }
     
-    // Limpar erro
     loginError.classList.remove('show');
     
-    // Definir usuário atual
-    currentUser = {
-        username,
-        avatar: selectedAvatar
-    };
+    currentUser = { username, avatar: selectedAvatar };
     
-    // Enviar dados para servidor
     socket.emit('join-room', {
         username,
         avatar: selectedAvatar
@@ -80,7 +91,7 @@ loginForm.addEventListener('submit', (e) => {
 });
 
 // ============================================
-// TRATAMENTO DE ENTRADA NA SALA
+// SOCKET EVENTS
 // ============================================
 
 socket.on('connect', () => {
@@ -88,100 +99,94 @@ socket.on('connect', () => {
     socket.emit('sync-data');
 });
 
-socket.on('sync-response', (data) => {
-    // Sincronizar dados ao reconectar
-    if (data.users && data.users.length > 0) {
-        updateUsersList(data.users);
+socket.on('users-list', (users) => {
+    console.log('📋 Usuários:', users);
+    updateUsersList(users);
+    updateRanking(users);
+    
+    if (loginScreen.classList.contains('active') && currentUser) {
+        enterChat();
     }
 });
 
 socket.on('room-full', (data) => {
-    console.log('❌ Sala cheia:', data.message);
     showRoomFullMessage(data.message);
-    setTimeout(() => {
-        socket.disconnect();
-    }, 2000);
+    setTimeout(() => socket.disconnect(), 2000);
 });
 
-// ============================================
-// ALTERNAR ENTRE TELAS
-// ============================================
-
-socket.on('connect', () => {
-    console.log('Conectado ao servidor');
+socket.on('room-stats', (stats) => {
+    userCountElement.textContent = stats.onlineCount;
 });
 
-// Implementar lógica de entrada na sala no cliente
-socket.on('users-list', (users) => {
-    console.log('📋 Lista de usuários atualizada:', users);
-    
-    // Se estamos na tela de login e recebemos uma lista de usuários, entrar no chat
-    if (loginScreen.classList.contains('active') && currentUser) {
-        enterChat();
-    }
-    
-    updateUsersList(users);
+socket.on('receive-message', (message) => {
+    addMessageToChat(message);
 });
 
-// Monitorar quando encerramos a conexão com a sala cheia
+socket.on('system-message', (data) => {
+    addSystemMessage(data.message);
+});
+
+socket.on('new-challenge', (data) => {
+    displayChallenge(data);
+});
+
+socket.on('update-ranking', (users) => {
+    updateRanking(users);
+});
+
+socket.on('quiz-started', (data) => {
+    showQuizModal(data);
+});
+
+socket.on('quiz-correct', (data) => {
+    showQuizResult(true, data);
+});
+
+socket.on('quiz-incorrect', (data) => {
+    showQuizResult(false, data);
+});
+
+socket.on('quiz-ended', () => {
+    closeQuizModal();
+});
+
+socket.on('receive-audio', (data) => {
+    addAudioMessage(data);
+});
+
+socket.on('reaction-received', (data) => {
+    showFloatingReaction(data.reaction, data.x, data.y);
+});
+
 socket.on('disconnect', () => {
     console.log('Desconectado do servidor');
 });
 
-/**
- * Transição para tela de chat
- */
+// ============================================
+// CHAT FUNCTIONS
+// ============================================
+
 function enterChat() {
-    // Atualizar header
     userNameHeader.textContent = currentUser.username;
     userAvatarHeader.textContent = currentUser.avatar;
     
-    // Trocar telas
     loginScreen.classList.remove('active');
     chatScreen.classList.add('active');
     
-    // Focar input
-    setTimeout(() => {
-        messageInput.focus();
-    }, 300);
+    setTimeout(() => messageInput.focus(), 300);
 }
-
-// ============================================
-// CHAT EM TEMPO REAL
-// ============================================
 
 messageForm.addEventListener('submit', (e) => {
     e.preventDefault();
     
     const text = messageInput.value.trim();
-    
     if (!text) return;
     
-    // Enviar mensagem
     socket.emit('send-message', { text });
-    
-    // Limpar input
     messageInput.value = '';
     messageInput.focus();
 });
 
-/**
- * Receber mensagens do servidor
- */
-socket.on('receive-message', (message) => {
-    addMessageToChat(message);
-});
-
-/**
- * Receber mensagens de sistema
- */
-socket.on('system-message', (data) => {
-    addSystemMessage(data.message);
-});
-
-/**
- * Adicionar mensagem ao chat
- */
 function addMessageToChat(message) {
     const messageEl = document.createElement('div');
     messageEl.className = 'message';
@@ -200,9 +205,6 @@ function addMessageToChat(message) {
     scrollToBottom();
 }
 
-/**
- * Adicionar mensagem de sistema
- */
 function addSystemMessage(message) {
     const systemEl = document.createElement('div');
     systemEl.className = 'system-message';
@@ -211,15 +213,32 @@ function addSystemMessage(message) {
     messagesContainer.appendChild(systemEl);
     scrollToBottom();
     
-    // Remover após animação
-    setTimeout(() => {
-        systemEl.remove();
-    }, 3000);
+    setTimeout(() => systemEl.remove(), 3000);
 }
 
-/**
- * Scroll automático até o final
- */
+function addAudioMessage(data) {
+    const audioEl = document.createElement('div');
+    audioEl.className = 'audio-message';
+    audioEl.innerHTML = `
+        <span class="message-avatar">${data.avatar}</span>
+        <div class="audio-player">
+            <div style="flex: 1;">
+                <div class="audio-message-header">
+                    <span class="audio-message-username">${escapeHtml(data.username)}</span>
+                    <span class="audio-message-time">${data.timestamp}</span>
+                </div>
+                <audio controls style="width: 100%; margin-top: 0.5rem;">
+                    <source src="${data.audio}" type="audio/webm">
+                    Seu navegador não suporta áudio.
+                </audio>
+            </div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(audioEl);
+    scrollToBottom();
+}
+
 function scrollToBottom() {
     setTimeout(() => {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -227,30 +246,21 @@ function scrollToBottom() {
 }
 
 // ============================================
-// DESAFIOS
+// CHALLENGES
 // ============================================
 
 btnDrawChallenge.addEventListener('click', () => {
     socket.emit('draw-challenge');
-    
-    // Animação no botão
     btnDrawChallenge.style.transform = 'scale(0.95)';
-    setTimeout(() => {
-        btnDrawChallenge.style.transform = 'scale(1)';
-    }, 100);
+    setTimeout(() => { btnDrawChallenge.style.transform = 'scale(1)'; }, 100);
 });
 
-/**
- * Receber novo desafio
- */
-socket.on('new-challenge', (data) => {
-    displayChallenge(data);
-    scrollToBottom();
-});
+if (btnChallengeBtn) {
+    btnChallengeBtn.addEventListener('click', () => {
+        socket.emit('draw-challenge');
+    });
+}
 
-/**
- * Exibir desafio na tela
- */
 function displayChallenge(data) {
     const challengeEl = document.createElement('div');
     challengeEl.className = 'challenge-display';
@@ -263,31 +273,162 @@ function displayChallenge(data) {
     messagesContainer.appendChild(challengeEl);
     scrollToBottom();
     
-    // Atualizar último desafio na sidebar
-    lastChallengeDiv.innerHTML = `
-        <p><strong>Último:</strong></p>
-        <p>${escapeHtml(data.challenge)}</p>
-        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">
-            Por ${escapeHtml(data.drawnBy)}
-        </p>
-    `;
+    if (lastChallengeDiv) {
+        lastChallengeDiv.innerHTML = `
+            <p><strong>Último:</strong></p>
+            <p>${escapeHtml(data.challenge)}</p>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                Por ${escapeHtml(data.drawnBy)}
+            </p>
+        `;
+    }
 }
 
 // ============================================
-// RANKING E PONTUAÇÃO
+// QUIZ
 // ============================================
 
-socket.on('update-ranking', (users) => {
-    updateRanking(users);
+if (btnQuiz) {
+    btnQuiz.addEventListener('click', () => {
+        socket.emit('start-quiz');
+    });
+}
+
+function showQuizModal(data) {
+    const quizText = document.getElementById('quiz-text');
+    const quizOptions = document.getElementById('quiz-options');
+    
+    quizText.textContent = data.question;
+    quizOptions.innerHTML = '';
+    
+    data.options.forEach((option, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option';
+        btn.textContent = option;
+        btn.addEventListener('click', () => {
+            socket.emit('answer-quiz', { answerIndex: index });
+            quizOptions.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+        });
+        quizOptions.appendChild(btn);
+    });
+    
+    startQuizTimer(data.timeLimit);
+    quizModal.classList.add('active');
+}
+
+function startQuizTimer(seconds) {
+    let remaining = seconds;
+    const timerText = document.getElementById('timer-text');
+    
+    const interval = setInterval(() => {
+        remaining--;
+        timerText.textContent = remaining;
+        
+        if (remaining <= 0) {
+            clearInterval(interval);
+            socket.emit('end-quiz');
+        }
+    }, 1000);
+}
+
+function showQuizResult(isCorrect, data) {
+    const result = document.getElementById('quiz-result');
+    result.className = 'quiz-result ' + (isCorrect ? 'correct' : 'incorrect');
+    result.textContent = isCorrect ? `✅ ${data.username} acertou!` : `❌ ${data.username} errou!`;
+    result.style.display = 'block';
+    
+    if (isCorrect) {
+        playConfetti();
+    }
+}
+
+function closeQuizModal() {
+    quizModal.classList.remove('active');
+    document.getElementById('quiz-result').style.display = 'none';
+}
+
+if (quizClose) {
+    quizClose.addEventListener('click', closeQuizModal);
+}
+
+// ============================================
+// AUDIO RECORDING
+// ============================================
+
+if (btnRecord) {
+    btnRecord.addEventListener('click', async () => {
+        if (!isRecording) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+                
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        socket.emit('send-audio', { audio: reader.result });
+                        btnRecord.classList.remove('recording');
+                        const recordStatus = btnRecord.querySelector('#record-status');
+                        if (recordStatus) recordStatus.textContent = '🎤 Gravar';
+                        isRecording = false;
+                    };
+                    reader.readAsDataURL(audioBlob);
+                };
+                
+                mediaRecorder.start();
+                isRecording = true;
+                btnRecord.classList.add('recording');
+                const recordStatus = btnRecord.querySelector('#record-status');
+                if (recordStatus) recordStatus.textContent = '⏹️ Parar';
+            } catch (err) {
+                console.error('Erro ao acessar microfone:', err);
+                alert('Microfone não disponível ou permissão negada');
+            }
+        } else if (mediaRecorder) {
+            mediaRecorder.stop();
+        }
+    });
+}
+
+// ============================================
+// REACTIONS
+// ============================================
+
+document.querySelectorAll('.btn-reaction').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const reaction = btn.getAttribute('data-reaction');
+        const x = e.clientX;
+        const y = e.clientY;
+        
+        socket.emit('send-reaction', { reaction, x, y });
+        showFloatingReaction(reaction, x, y);
+    });
 });
 
-/**
- * Atualizar ranking
- */
+function showFloatingReaction(reaction, x, y) {
+    const floatingReaction = document.createElement('div');
+    floatingReaction.className = 'floating-reaction';
+    floatingReaction.textContent = reaction;
+    floatingReaction.style.left = x + 'px';
+    floatingReaction.style.top = y + 'px';
+    
+    document.body.appendChild(floatingReaction);
+    
+    setTimeout(() => floatingReaction.remove(), 2000);
+}
+
+// ============================================
+// RANKING
+// ============================================
+
 function updateRanking(users) {
     rankingList.innerHTML = '';
     
-    // Ordenar por pontos
     const sorted = [...users].sort((a, b) => b.points - a.points);
     
     if (sorted.length === 0) {
@@ -326,17 +467,9 @@ function updateRanking(users) {
 }
 
 // ============================================
-// LISTA DE USUÁRIOS ONLINE
+// USERS LIST
 // ============================================
 
-socket.on('users-list', (users) => {
-    updateUsersList(users);
-    updateRanking(users);
-});
-
-/**
- * Atualizar lista de usuários online
- */
 function updateUsersList(users) {
     onlineUsersList.innerHTML = '';
     
@@ -358,71 +491,30 @@ function updateUsersList(users) {
     });
 }
 
-/**
- * Atualizar estatísticas da sala
- */
-socket.on('room-stats', (stats) => {
-    userCountElement.textContent = stats.onlineCount;
-});
-
 // ============================================
-// BOTÃO SAIR
+// LOGOUT
 // ============================================
 
 btnLogout.addEventListener('click', () => {
     if (confirm('Desconectar da sala?')) {
-        // Desconectar do socket
         socket.disconnect();
         
-        // Voltar à tela de login
         currentUser = null;
         chatScreen.classList.remove('active');
         loginScreen.classList.add('active');
         
-        // Limpar formulário
         document.getElementById('username').value = '';
-        document.getElementById('message-input').value = '';
+        messageInput.value = '';
         messagesContainer.innerHTML = '<div class="welcome-message"><h3>Bem-vindo ao Conexão 4</h3><p>Aproveite o chat com seus amigos!</p></div>';
         
-        // Reconectar socket
         socket.connect();
     }
 });
 
 // ============================================
-// TRATAMENTO DE ERROS
+// UTILITIES
 // ============================================
 
-/**
- * Exibir erro de login
- */
-function showLoginError(message) {
-    loginError.textContent = message;
-    loginError.classList.add('show');
-    
-    // Remover após 5 segundos
-    setTimeout(() => {
-        loginError.classList.remove('show');
-    }, 5000);
-}
-
-/**
- * Exibir mensagem de sala cheia
- */
-function showRoomFullMessage(message) {
-    roomFullMessage.textContent = '❌ ' + message;
-    roomFullMessage.classList.add('show');
-    
-    loginError.classList.remove('show');
-}
-
-// ============================================
-// UTILITÁRIOS
-// ============================================
-
-/**
- * Escapar HTML para prevenir XSS
- */
 function escapeHtml(text) {
     const map = {
         '&': '&amp;',
@@ -434,83 +526,72 @@ function escapeHtml(text) {
     return text.replace(/[&<>"']/g, m => map[m]);
 }
 
-// ============================================
-// AJUSTES PARA MOBILE
-// ============================================
+function showLoginError(message) {
+    loginError.textContent = message;
+    loginError.classList.add('show');
+    
+    setTimeout(() => {
+        loginError.classList.remove('show');
+    }, 5000);
+}
 
-// Ajustar tamanho da font do input para evitar zoom no iOS
-if (window.innerWidth < 768) {
-    messageInput.style.fontSize = '16px';
-    document.getElementById('username').style.fontSize = '16px';
+function showRoomFullMessage(message) {
+    roomFullMessage.textContent = '❌ ' + message;
+    roomFullMessage.classList.add('show');
+    loginError.classList.remove('show');
 }
 
 // ============================================
-// USAR ENTER PARA ENVIAR (DESKTOP) E SHIFT+ENTER (MOBILE)
+// VISUAL EFFECTS
 // ============================================
+
+function playConfetti() {
+    for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * window.innerWidth + 'px';
+        confetti.style.top = '-10px';
+        confetti.style.backgroundColor = ['#6c5ce7', '#fd79a8', '#00b894', '#00d4ff'][Math.floor(Math.random() * 4)];
+        confetti.style.animation = `confettiFall ${2 + Math.random() * 2}s ease-in forwards`;
+        
+        document.body.appendChild(confetti);
+        
+        setTimeout(() => confetti.remove(), 5000);
+    }
+}
+
+// ============================================
+// PAGE INTERACTIVITY
+// ============================================
+
+if (window.innerWidth < 768) {
+    document.getElementById('username').style.fontSize = '16px';
+    messageInput.style.fontSize = '16px';
+}
 
 messageInput.addEventListener('keydown', (e) => {
     const isMobile = window.innerWidth < 768;
     
     if (e.key === 'Enter') {
-        if (isMobile && !e.shiftKey) {
-            // Em mobile, permitir nova linha normal
-            return;
-        }
+        if (isMobile && !e.shiftKey) return;
         
         if (!isMobile || e.shiftKey) {
-            // Em desktop: enviar com Enter
-            // Em mobile: enviar com Shift+Enter
             e.preventDefault();
             messageForm.dispatchEvent(new Event('submit'));
         }
     }
 });
 
-// ============================================
-// NOTIFICAÇÃO DE NOVA MENSAGEM
-// ============================================
-
-let isPageFocused = true;
-
 window.addEventListener('focus', () => {
-    isPageFocused = true;
+    document.title = 'Conexão 4 Ultimate';
 });
 
-window.addEventListener('blur', () => {
-    isPageFocused = false;
-});
-
-socket.on('receive-message', (message) => {
-    if (!isPageFocused && 'Notification' in window && Notification.permission === 'granted') {
-        new Notification(`${message.username} disse:`, {
-            body: message.text,
-            icon: message.avatar
-        });
-    }
-});
-
-// Solicitar permissão de notificação
-if ('Notification' in window && Notification.permission === 'default') {
-    Notification.requestPermission();
-}
-
-// ============================================
-// EVENT LISTENERS ADICIONAIS
-// ============================================
-
-// Fechar conexão logicamente quando sair da página
 window.addEventListener('beforeunload', () => {
     socket.emit('disconnect');
 });
 
-// Sincronizar dados ao reconectar
-socket.on('reconnect', () => {
-    console.log('Reconectado ao servidor');
-    socket.emit('sync-data');
-});
+if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+}
 
-socket.on('reconnect_error', (error) => {
-    console.error('Erro ao reconectar:', error);
-});
-
-console.log('✅ Script do frontend carregado');
+console.log('✅ Script ULTIMATE carregado!');

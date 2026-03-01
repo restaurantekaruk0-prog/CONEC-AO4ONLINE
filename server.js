@@ -1,6 +1,6 @@
 /**
- * CONEXÃO 4 - PREMIUM
- * Chat em tempo real com desafios e pontuação
+ * CONEXÃO 4 - ULTIMATE
+ * Chat com Mini-Games, Desafios Avançados, Áudio e muito mais!
  * Servidor: Node.js + Express + Socket.io
  */
 
@@ -21,13 +21,15 @@ const io = socketIo(server, {
 
 // Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb' }));
 
 // Rota raiz
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Catch-all para SPA (Single Page Application)
+// Catch-all para SPA
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -38,6 +40,8 @@ app.get('*', (req, res) => {
 
 const ROOM_NAME = 'sala-principal';
 const MAX_USERS = 4;
+
+// Desafios
 const CHALLENGES = [
   '🎤 Cante uma frase em português',
   '😂 Conte uma piada engraçada',
@@ -61,13 +65,57 @@ const CHALLENGES = [
   '🎯 O que você quer conquistar este ano?'
 ];
 
+// Quizzes
+const QUIZZES = [
+  {
+    question: 'Qual é a capital do Brasil?',
+    options: ['Rio de Janeiro', 'Brasília', 'São Paulo', 'Salvador'],
+    correctAnswer: 1,
+    timeLimit: 10,
+    points: 10
+  },
+  {
+    question: 'Em que ano o Brasil foi descoberto?',
+    options: ['1500', '1520', '1492', '1450'],
+    correctAnswer: 0,
+    timeLimit: 10,
+    points: 10
+  },
+  {
+    question: 'Qual é o maior rio do Brasil?',
+    options: ['Rio de Janeiro', 'Amazonas', 'São Francisco', 'Paraná'],
+    correctAnswer: 1,
+    timeLimit: 10,
+    points: 10
+  },
+  {
+    question: 'Quantas cores tem a bandeira do Brasil?',
+    options: ['2', '3', '4', '5'],
+    correctAnswer: 2,
+    timeLimit: 10,
+    points: 10
+  },
+  {
+    question: 'Qual é o prato típico mais famoso do Brasil?',
+    options: ['Pizza', 'Feijoada', 'Hambúrguer', 'Sushi'],
+    correctAnswer: 1,
+    timeLimit: 10,
+    points: 10
+  }
+];
+
 // ============================================
 // ESTRUTURAS DE DADOS
 // ============================================
 
 let usersData = {}; // { socketId: { username, avatar, points } }
 let lastChallenge = null;
-let users = {}; // Armazena dados dos usuários por socket ID
+let gameState = {
+  currentGame: null,
+  gameData: null,
+  players: {},
+  answers: {}
+};
 
 // ============================================
 // FUNÇÕES AUXILIARES
@@ -100,6 +148,13 @@ function getRoomStats() {
  */
 function getRandomChallenge() {
   return CHALLENGES[Math.floor(Math.random() * CHALLENGES.length)];
+}
+
+/**
+ * Seleciona um quiz aleatório
+ */
+function getRandomQuiz() {
+  return QUIZZES[Math.floor(Math.random() * QUIZZES.length)];
 }
 
 /**
@@ -212,6 +267,121 @@ io.on('connection', (socket) => {
   });
 
   /**
+   * Evento: Iniciar Quiz
+   */
+  socket.on('start-quiz', () => {
+    const user = usersData[socket.id];
+    
+    if (!user) return;
+
+    // Selecionar quiz aleatório
+    const quiz = getRandomQuiz();
+    gameState.currentGame = 'quiz';
+    gameState.gameData = quiz;
+    gameState.answers = {};
+
+    // Enviar quiz para todos
+    io.to(ROOM_NAME).emit('quiz-started', {
+      question: quiz.question,
+      options: quiz.options,
+      timeLimit: quiz.timeLimit
+    });
+
+    console.log(`📝 Quiz iniciado por ${user.username}`);
+
+    // Término automático do quiz após timeLimit
+    setTimeout(() => {
+      if (gameState.currentGame === 'quiz') {
+        io.to(ROOM_NAME).emit('quiz-ended');
+        gameState.currentGame = null;
+      }
+    }, quiz.timeLimit * 1000 + 1000);
+  });
+
+  /**
+   * Evento: Responder Quiz
+   */
+  socket.on('answer-quiz', (answerData) => {
+    const user = usersData[socket.id];
+    
+    if (!user || gameState.currentGame !== 'quiz') return;
+
+    // Verificar se resposta está correta
+    const isCorrect = answerData.answerIndex === gameState.gameData.correctAnswer;
+
+    if (isCorrect) {
+      // Adicionar pontos
+      usersData[socket.id].points += gameState.gameData.points;
+
+      // Notificar para todos
+      io.to(ROOM_NAME).emit('quiz-correct', {
+        username: user.username,
+        points: gameState.gameData.points
+      });
+    } else {
+      // Notificar resposta incorreta
+      io.to(ROOM_NAME).emit('quiz-incorrect', {
+        username: user.username
+      });
+    }
+
+    // Atualizar ranking
+    io.to(ROOM_NAME).emit('update-ranking', getOnlineUsers());
+
+    console.log(`📝 ${user.username} respondeu quiz: ${isCorrect ? 'CORRETO' : 'INCORRETO'}`);
+  });
+
+  /**
+   * Evento: Término do Quiz
+   */
+  socket.on('end-quiz', () => {
+    if (gameState.currentGame === 'quiz') {
+      io.to(ROOM_NAME).emit('quiz-ended');
+      gameState.currentGame = null;
+    }
+  });
+
+  /**
+   * Evento: Receber Áudio
+   */
+  socket.on('send-audio', (audioData) => {
+    const user = usersData[socket.id];
+    
+    if (!user) return;
+
+    const audioMessage = {
+      username: user.username,
+      avatar: user.avatar,
+      audio: audioData.audio,
+      timestamp: new Date().toLocaleTimeString('pt-BR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })
+    };
+
+    io.to(ROOM_NAME).emit('receive-audio', audioMessage);
+    console.log(`🎤 ${user.username} enviou mensagem de áudio`);
+  });
+
+  /**
+   * Evento: Reação em Tempo Real
+   */
+  socket.on('send-reaction', (reactionData) => {
+    const user = usersData[socket.id];
+    
+    if (!user) return;
+
+    io.to(ROOM_NAME).emit('reaction-received', {
+      username: user.username,
+      reaction: reactionData.reaction,
+      x: reactionData.x,
+      y: reactionData.y
+    });
+
+    console.log(`💫 ${user.username} reagiu com ${reactionData.reaction}`);
+  });
+
+  /**
    * Evento: Desconexão do usuário
    */
   socket.on('disconnect', () => {
@@ -251,8 +421,9 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
-  console.log(`\n🚀 CONEXÃO 4 - PREMIUM iniciado!`);
+  console.log(`\n🚀 CONEXÃO 4 - ULTIMATE iniciado!`);
   console.log(`📍 Servidor rodando em: http://localhost:${PORT}`);
   console.log(`👥 Máximo de usuários: ${MAX_USERS}`);
-  console.log(`🎯 Desafios disponíveis: ${CHALLENGES.length}\n`);
+  console.log(`🎯 Desafios disponíveis: ${CHALLENGES.length}`);
+  console.log(`📝 Quizzes disponíveis: ${QUIZZES.length}\n`);
 });
